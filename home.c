@@ -18,7 +18,7 @@ static RT_TASK my_task;
 
 static struct enc_str *enc;
 
-static void period(int t)
+static void home_set (int t)
 
 {
 
@@ -26,7 +26,7 @@ static void period(int t)
 
     int inizio = 0;
     int fine = 0;
-    int val;
+    int val,periodo;
 
     while (1) {
 
@@ -59,15 +59,13 @@ int init_module(void)
     RTIME tick_period;
 
     start_rt_timer(nano2count(TICK_PERIOD));
-    rt_task_init(&enc_task, (void *)enc, 1, STACK_SIZE, 11, 1, 0);
-    rt_task_init(&speed_task, (void *)speed, 1, STACK_SIZE, 10, 1, 0);
+    rt_task_init(&my_task, (void *)enc, 1, STACK_SIZE, 11, 1, 0);
 
-    enc_data = rtai_kmalloc(SHMNAM, sizeof(struct enc_str));
+    enc = rtai_kmalloc(SHMNAM, sizeof(struct enc_str));
 
     tick_period = nano2count(TICK_PERIOD);
 
-    rt_task_make_periodic(&enc_task, rt_get_time() + tick_period, tick_period);
-    rt_task_make_periodic(&speed_task, rt_get_time() + tick_period, 320*tick_period);
+    rt_task_make_periodic(&my_task, rt_get_time() + tick_period, tick_period);
 
     return 0;
 
@@ -77,8 +75,7 @@ void cleanup_module(void)
 
 {
 
-    rt_task_delete(&enc_task);
-    rt_task_delete(&speed_task);
+    rt_task_delete(&my_task);
 
     rtai_kfree(SHMNAM);
 
