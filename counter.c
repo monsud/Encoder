@@ -22,26 +22,21 @@ static void counter(int t)
 
 {
 
-    unsigned int count = 0;
-
-    int val = 0;
-
     while (1) {
 
-        enc->cont = count;
+        int trovato = enc->slit;
 
-        if ((count%10)==0){ 
-		val = val + 1;
-		val = val % 2;
+        if (trovato==1){ 
+		enc->cont++;
+		trovato=0;
 	}
 
-        enc->slit = val; 
-	
-        count++; 
+        else { 
 
 	//rt_printk("%d:\t\t %d \n",count,enc->value);
 
         rt_task_wait_period();
+	}
 
     }
 
