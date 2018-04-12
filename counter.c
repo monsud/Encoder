@@ -32,14 +32,16 @@ static void counter(int t)
 
         enc->slit = count;
 
-        if ((count%50)==0){ //faccio il controllo ogni 5 ms del periodo
+        if ((count%10)==0){ //faccio il controllo ogni 5 ms del periodo
 		val = val + 1;
 		val = val % 2;
 	}
 
         enc->value = val; //metto il valore in shm
-
+	
         count++; //passo alla prossima onda
+
+	rt_printk("%d:\t\t %d \n",count,enc_data->value;
 
         rt_task_wait_period();
 
