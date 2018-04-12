@@ -18,8 +18,6 @@ static RT_TASK my_task;
 
 static struct enc_str *enc;
 
- 
-
 static void counter(int t)
 
 {
@@ -30,18 +28,18 @@ static void counter(int t)
 
     while (1) {
 
-        enc->slit = count;
+        enc->cont = count;
 
-        if ((count%10)==0){ //faccio il controllo ogni 5 ms del periodo
+        if ((count%10)==0){ 
 		val = val + 1;
 		val = val % 2;
 	}
 
-        enc->value = val; //metto il valore in shm
+        enc->slit = val; 
 	
-        count++; //passo alla prossima onda
+        count++; 
 
-	rt_printk("%d:\t\t %d \n",count,enc_data->value;
+	//rt_printk("%d:\t\t %d \n",count,enc->value);
 
         rt_task_wait_period();
 
