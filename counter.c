@@ -24,21 +24,29 @@ static void counter(int t)
 
     while (1) {
 
-        int trovato = enc->slit;
+        int wave = enc->slit;
+	int trovato=0;
+	int count=0;
 
-        if (trovato==1){ 
-		enc->cont++;
+        switch (trovato){
+	   case 0:
+	    if (wave==1){
+	     trovato=1;
+     	     (enc->cont)++;
+	    }
+	break;
+	   case 1:
+	     if (wave==0){
 		trovato=0;
+	     }	
+	break;
 	}
-
-        else { 
-
 	//rt_printk("%d:\t\t %d \n",count,enc->value);
 
         rt_task_wait_period();
-	}
 
     }
+	
 
 }
 
