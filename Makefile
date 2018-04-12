@@ -1,4 +1,5 @@
 ifneq ($(KERNELRELEASE),)
+obj-m   := enc.o
 obj-m   := counter.o
 obj-m   := home.o
 else
