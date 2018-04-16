@@ -25,7 +25,7 @@ static void counter(int t)
 	int trovato = 0;
 
     	while (1) {
-	prev_slit = enc->slit; //prendo l'onda e la metto in una variabile temporale
+
 	switch (trovato){
 	
 	//prev_slit = enc->slit; //prendo l'onda e la metto in una variabile temporale
@@ -33,17 +33,19 @@ static void counter(int t)
 	case 0:
 		if (prev_slit==0 && enc->slit==1) //fronte di salita
 		trovato=1;
+
 	break;
 
 	case 1:
 		enc->count=enc->count+1;
-		//if (prev_slit==1 && enc->slit==0) //fronte di discesca
+		if (prev_slit==1 && enc->slit==1) //se rimango alto devo uscire
 		trovato = 0;
 	break;
 
 	}
 	
         //rt_task_wait_period();
+	prev_slit = enc->slit; //prendo l'onda e la metto in una variabile temporale
 	rt_sleep(nano2count(3800000));
 	rt_printk("Cont %d:\t Wave: %d\t Trov: %d\n",enc->count,enc->slit,trovato);
 	
