@@ -21,30 +21,32 @@ static struct enc_str *enc;
 static void counter(int t)
 
 {
+	int prev_slit = 0;
+	int trovato = 0;
 
-    while (1) {
-
-        int wave = enc->slit;
-	int trovato=0;
-	int count=0;
-
-        switch (trovato){
-	   case 0:
-	    if (wave==1){
-	     trovato=1;
-     	     (enc->cont)++;
-	    }
+    	while (1) {
+	prev_slit = enc->slit; //prendo l'onda e la metto in una variabile temporale
+	switch (trovato){
+	
+	//prev_slit = enc->slit; //prendo l'onda e la metto in una variabile temporale
+	
+	case 0:
+		if (prev_slit==0 && enc->slit==1) //fronte di salita
+		trovato=1;
 	break;
-	   case 1:
-	     if (wave==0){
-		trovato=0;
-	     }	
+
+	case 1:
+		enc->count=enc->count+1;
+		//if (prev_slit==1 && enc->slit==0) //fronte di discesca
+		trovato = 0;
 	break;
+
 	}
-	//rt_printk("%d:\t\t %d \n",count,enc->value);
-
-        rt_task_wait_period();
-
+	
+        //rt_task_wait_period();
+	rt_sleep(nano2count(3800000));
+	rt_printk("Cont %d:\t Wave: %d\t Trov: %d\n",enc->count,enc->slit,trovato);
+	
     }
 	
 
