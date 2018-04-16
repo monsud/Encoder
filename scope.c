@@ -38,8 +38,8 @@ int main (void)
 
     while (!end) {
 
-        printf(" Counter : %d Value : %d \n", enc->cont, enc->slit);
-	sleep(1);
+        printf(" Counter : %d Value : %d \n", enc->count, enc->slit);
+	rt_sleep(nano2count(3800000));
 
     }
 

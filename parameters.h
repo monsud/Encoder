@@ -13,6 +13,6 @@ struct enc_str
 {
     unsigned int slit;
     unsigned int home_slit;
-    unsigned int value; //valore per il contatore di onde
+    unsigned int count; //valore per il contatore di onde
     unsigned int periodo; //valore per il periodo della home
 };
