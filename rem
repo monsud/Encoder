@@ -1,5 +1,0 @@
-arch=`rtai-config --linux-version`
-rmmod rt_enc
-rmmod counter
-rmmod home
-./remod
