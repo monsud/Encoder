@@ -15,7 +15,7 @@
 static RTIME slack_1,slack_2;
 static RT_TASK enc_task;
 static RT_TASK speed_task;
-//static RT_TASK count_task;
+static RT_TASK count_task;
 static RT_TASK home_task;
 //static RT_TASK td_task;
 
@@ -76,11 +76,9 @@ static void counter(long t)
 	int prev_slit = 0;
 
     	while (1) {
-
-		if (prev_slit==0 && enc_data->slit==1){ //fronte di salita
-		enc_data->count=enc_data->count+1;
 		ti = rt_get_time();
-		}
+		if (prev_slit==0 && enc_data->slit==1) //fronte di salita
+		enc_data->count=enc_data->count+1;
 
 		prev_slit = enc_data->slit; //prendo l'onda e la metto in una variabile temporale
 
@@ -116,7 +114,7 @@ static void home (int t)
 			now = rt_get_time();
 			enc_data->time = count2nano(now-prev_time);
 			prev_time = now;
-			rt_printk("Time: %d:\t Frequency: %d\ Slack: %d\n",enc_data->time,60000000000/enc_data->time,slack_2);
+			//rt_printk("Time: %d:\t Frequency in RPM: %d\ Slack: %d\n",enc_data->time,6000000000/(enc_data->time),slack_2);
 		}
 	prev_home = enc_data->home_slit;
 
