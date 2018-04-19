@@ -23,23 +23,22 @@
 static int end;
 
 static void endme(int dummy) { end=1; }
-
  
 
 int main (void)
 
 {
 
-    struct enc_str *enc;
+    struct enc_str *enc_data;
 
     signal(SIGINT, endme);
 
-    enc = rtai_malloc (SHMNAM,1);
+    enc_data = rtai_malloc (SHMNAM,1);
 
     while (!end) {
 
-        printf(" Counter : %d Value : %d  Period: %d\n", enc->count, enc->period);
-	//sleep(1);
+        printf(" Counter : %d Frequency : %d \n", enc_data->count, 600000000/enc_data->time);
+	sleep(1);
 
     }
 

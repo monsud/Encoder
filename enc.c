@@ -12,15 +12,12 @@
 
 #include "parameters.h"
 
-
-//static RT_TASK thread[NTASKS];
-
-//static int cpu_used;
-//static RTIME slack_time;
+static RTIME slack_1,slack_2;
 static RT_TASK enc_task;
 static RT_TASK speed_task;
-static RT_TASK count_task;
+//static RT_TASK count_task;
 static RT_TASK home_task;
+//static RT_TASK td_task;
 
 static struct enc_str *enc_data;
 
@@ -67,75 +64,89 @@ static void speed(int t)
     }
 }
 
-static void counter(int t)
+static void counter(long t)
 
 {
+	RTIME start_time = rt_get_time();
+	RTIME ri = start_time;
+	RTIME di = ri + nano2count(100000);
+	RTIME now,ti;
+
+	unsigned int ci;
 	int prev_slit = 0;
-	int trovato = 0;
 
     	while (1) {
 
-	switch (trovato){
-	
-	//prev_slit = enc->slit; //prendo l'onda e la metto in una variabile temporale
-	
-	case 0:
-		if (prev_slit==0 && enc_data->slit==1) //fronte di salita
-		trovato=1;
-
-	break;
-
-	case 1:
+		if (prev_slit==0 && enc_data->slit==1){ //fronte di salita
 		enc_data->count=enc_data->count+1;
-		if (prev_slit==1 && enc_data->slit==1) //se rimango alto devo uscire
-		trovato = 0;
-	break;
+		ti = rt_get_time();
+		}
 
-	}
-	
-        //rt_task_wait_period();
-	prev_slit = enc_data->slit; //prendo l'onda e la metto in una variabile temporale
-	rt_sleep(nano2count(3800000));
-	//rt_printk("Cont %d:\t Wave: %d\t Trov: %d\n",enc_data->count,enc_data->slit,trovato);
-	
+		prev_slit = enc_data->slit; //prendo l'onda e la metto in una variabile temporale
+
+		now = rt_get_time();
+		ci = count2nano (now-ti);
+		slack_1 = count2nano (di-ri-ci);
+
+		ri = next_period();
+		di = ri + nano2count(1000000);
+
+		rt_printk("Cont %d:\t Wave: %d\t Slack: %d\n",enc_data->count,enc_data->slit,slack_1);
+		rt_task_wait_period();
     }
 }
 
 static void home (int t)
 
 {
-   	int prev_slit = 0;
-	int inizio=0,fine=0;
+	RTIME start_time = rt_get_time();
+	RTIME ri = start_time;
+	RTIME di = ri + nano2count(100000);
+	RTIME prev_time = start_time;
+	RTIME now,now_1,ti;
+
+	unsigned int ci;
+	unsigned int prev_home=0;
+   	
 
     	while (1) {
+		ti = rt_get_time();
 
-	switch (enc_data->home_slit){
-	
-	case 0:
-		if (prev_slit==0 && enc_data->slit==1)
-		enc_data->home_slit=1;
-		//start_rt_timer(TICK_PERIOD);
-		inizio=rt_get_time();
-	break;
+		if (prev_home==0 && enc_data->home_slit==1){
+			now = rt_get_time();
+			enc_data->time = count2nano(now-prev_time);
+			prev_time = now;
+			rt_printk("Time: %d:\t Frequency: %d\ Slack: %d\n",enc_data->time,60000000000/enc_data->time,slack_2);
+		}
+	prev_home = enc_data->home_slit;
 
-	case 1:
-		if ((prev_slit==0 && enc_data->slit==1) && enc_data->home_slit==1)
-		//enc_data->time=rt_get_time_ns();
-		fine=rt_get_time();
-		enc_data->home_slit=0;
+	now_1 = rt_get_time();
+	ci = count2nano (now_1-ti);
+	slack_2 = count2nano (di - ri -(now_1-ti));
 
-	break;
-	}
-	
-	prev_slit = enc_data->home_slit; //prendo l'onda e la metto in una variabile temporale
-	enc_data->time=fine-inizio;
-	//rt_sleep(nano2count(3800000));
+	ri = next_period();
+	di = ri + nano2count(1000000);
+
 	rt_task_wait_period();
-	rt_printk("Time %d:\t Home: %d\t Wave: %d\n",enc_data->time,enc_data->home_slit,enc_data->slit);
 	
     }
 }
+/*
+static void td (int t){
 
+	float media=0;
+	int n=0;
+
+	while (1){
+		if (n%100==0){
+		media=((slack_1+slack_2)/2);
+		//rt_printk("N. Esecution: %d:\t Average: %d\ ",n,media);
+		n++;
+		}
+	}
+
+}
+*/
 int init_module(void)
 
 {
@@ -145,8 +156,9 @@ int init_module(void)
     start_rt_timer(nano2count(TICK_PERIOD));
     rt_task_init(&enc_task, (void *)enc, 1, STACK_SIZE, 11, 1, 0);
     rt_task_init(&speed_task, (void *)speed, 1, STACK_SIZE, 10, 1, 0);
-    rt_task_init(&count_task, (void *)counter, 1, STACK_SIZE, TASK_A, 1, 0);
-    rt_task_init(&home_task, (void *)home, 1, STACK_SIZE, TASK_B, 1, 0);
+    rt_task_init(&count_task, (void *)counter, 1, STACK_SIZE, 10, 1, 0);
+    rt_task_init(&home_task, (void *)home, 1, STACK_SIZE, 10, 1, 0);
+    //rt_task_init(&td_task, (void *)td, 1, STACK_SIZE, 10, 1, 0);
 
     enc_data = rtai_kmalloc(SHMNAM, sizeof(struct enc_str));
 
@@ -157,10 +169,9 @@ int init_module(void)
     rt_task_make_periodic(&enc_task, rt_get_time() + tick_period, tick_period);
     rt_task_make_periodic(&speed_task, rt_get_time() + tick_period, 320*tick_period);
     rt_task_make_periodic(&count_task, rt_get_time() + tick_period, tick_period);
-    rt_task_make_periodic(&home_task, rt_get_time() + tick_period, tick_period);
-
-    rt_spv_RMS(0);
-
+    rt_task_make_periodic(&home_task, rt_get_time() + tick_period, tick_period);  
+    //rt_task_make_periodic(&td_task, rt_get_time() + tick_period, 100*tick_period);
+	
     return 0;
 
 }
@@ -168,12 +179,11 @@ int init_module(void)
 void cleanup_module(void)
 
 {
-    stop_rt_timer();
-
     rt_task_delete(&enc_task);
     rt_task_delete(&speed_task);
     rt_task_delete(&count_task);
     rt_task_delete(&home_task);
+    //rt_task_delete(&td_task);
 
     rtai_kfree(SHMNAM);
 

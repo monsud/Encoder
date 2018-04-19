@@ -8,10 +8,6 @@
 
 #define SHMNAM 1234567
 
-#define TASK_A 1
-
-#define TASK_B 2
-
 struct enc_str
 
 {
