@@ -37,7 +37,7 @@ int main (void)
 
     while (!end) {
 
-        printf(" Counter : %d Frequency : %d \n", enc_data->count, 600000000/enc_data->time);
+        printf(" Counter : %d Frequency in RPM: %ld \n", enc_data->count, 60000000000/enc_data->time);
 	sleep(1);
 
     }
