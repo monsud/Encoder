@@ -17,7 +17,7 @@ static RT_TASK enc_task;
 static RT_TASK speed_task;
 static RT_TASK count_task;
 static RT_TASK home_task;
-//static RT_TASK td_task;
+static RT_TASK td_task;
 
 static struct enc_str *enc_data;
 
@@ -89,7 +89,7 @@ static void counter(long t)
 		ri = next_period();
 		di = ri + nano2count(1000000);
 
-		rt_printk("Cont %d:\t Wave: %d\t Slack: %d\n",enc_data->count,enc_data->slit,slack_1);
+		//rt_printk("Cont %d:\t Wave: %d\t Slack: %d\n",enc_data->count,enc_data->slit,slack_1);
 		rt_task_wait_period();
     }
 }
@@ -129,22 +129,25 @@ static void home (int t)
 	
     }
 }
-/*
+
 static void td (int t){
 
-	float media=0;
-	int n=0;
+	long media=0;
+	int n=0,somma=0;
 
 	while (1){
 		if (n%100==0){
-		media=((slack_1+slack_2)/2);
-		//rt_printk("N. Esecution: %d:\t Average: %d\ ",n,media);
-		n++;
+		somma=(slack_1+slack_2);
+		media=somma/2;
+		rt_printk("N. Esecution: %d:\t Average: %d\n ",n,media);
 		}
+		n++;
+	rt_task_wait_period();
 	}
 
+
 }
-*/
+
 int init_module(void)
 
 {
@@ -156,7 +159,7 @@ int init_module(void)
     rt_task_init(&speed_task, (void *)speed, 1, STACK_SIZE, 10, 1, 0);
     rt_task_init(&count_task, (void *)counter, 1, STACK_SIZE, 10, 1, 0);
     rt_task_init(&home_task, (void *)home, 1, STACK_SIZE, 10, 1, 0);
-    //rt_task_init(&td_task, (void *)td, 1, STACK_SIZE, 10, 1, 0);
+    rt_task_init(&td_task, (void *)td, 1, STACK_SIZE, 10, 1, 0);
 
     enc_data = rtai_kmalloc(SHMNAM, sizeof(struct enc_str));
 
@@ -168,7 +171,7 @@ int init_module(void)
     rt_task_make_periodic(&speed_task, rt_get_time() + tick_period, 320*tick_period);
     rt_task_make_periodic(&count_task, rt_get_time() + tick_period, tick_period);
     rt_task_make_periodic(&home_task, rt_get_time() + tick_period, tick_period);  
-    //rt_task_make_periodic(&td_task, rt_get_time() + tick_period, 100*tick_period);
+    rt_task_make_periodic(&td_task, rt_get_time() + tick_period, 2*tick_period);
 	
     return 0;
 
@@ -181,7 +184,7 @@ void cleanup_module(void)
     rt_task_delete(&speed_task);
     rt_task_delete(&count_task);
     rt_task_delete(&home_task);
-    //rt_task_delete(&td_task);
+    rt_task_delete(&td_task);
 
     rtai_kfree(SHMNAM);
 
